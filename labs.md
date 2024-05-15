@@ -56,7 +56,7 @@ extra/helm-install-traefik.sh
 k get all -n traefik
 ```
 
-6.	You should now be able to see the metrics area that Traefik exposes for Prometheus as a pod endpoint.  In the tab where Prometheus is loaded, take a look in the **Status -> Targets** area of Prometheus and see if you can find it. You can enter "traefik" in the search box or use Ctrl-F/CMD-F to try to find the text **traefik**.  Note that this is the pod endpoint and not a standalone target.  (If you don't find it, see if the **kubernetes-pods (1/1 up)** has a *show more* button next to it.  If so, click on that to expand the list.)
+6.	You should now be able to see the metrics area that Traefik exposes for Prometheus as a pod endpoint.  In the tab where Prometheus is loaded, take a look in the **Status -> Targets** area of Prometheus and see if you can find it. You can enter "traefik" in the search box or use Ctrl-F/CMD-F to try to find the text **traefik**.  Note that this is the pod endpoint and not a standalone target.  (If you don't find it, see if the **kubernetes-pods (1/1 up)** has a *show more* button next to it. If so, click on that to expand the list.)
 
 ![traefik in targets](./images/promstart61.png?raw=true "traefik in targets") 
 ![traefik in targets](./images/promstart16.png?raw=true "targets")
@@ -116,46 +116,46 @@ nohup kubectl port-forward -n roar svc/roar-web 31790:8089 >&/dev/null &
  
  ![mysql exporter](./images/promstart14.png?raw=true "mysql exporter")
 
-4.	As part of the configuration for this, we need to setup a new user with certain privileges in the database that's running for our backend. For simplicity, I've provided a simple script that you can run for this.  You can take a look at the script to see what it does and then run it to add the user and privileges. (Note that it requires the namespace as an argument to be passed to it.) This script and other files are in a different directory under prom-start-v2 named **mysql-ex**.
+4.	As part of the configuration for this, we need to setup a new user with certain privileges in the database that's running for our backend. For simplicity, I've provided a simple script that you can run for this.  You can take a look at the script to see what it does and then run it to add the user and privileges. (Note that it requires the namespace as an argument to be passed to it.) This script and other files are in a different directory under prom-start-v2 named **mysql-ex**. For the last command, we are supplying as an argument the namespace where the database is running.
 
 ```
 cd /workspaces/prom-start-v2/mysql-ex
 cat update-db.sh
-./update-db.sh roar  (note we supply namespace where db is running)
+./update-db.sh roar  
 ```
-
+<br>
 5.	Now we are ready to deploy the mysql helm chart to get our mysql exporter up and running.  To do this we need to supply a values.yaml file that defines the image we want to use, a set of metrics "collectors" and the pod to use (via labels).  We also have a data file for a secret that is required with information on the service, user, password, and port that we want to access.  Take a look at those files.
 
 ```
 cat values.yaml
 cat secret.yaml
 ```
-
+<br>
 6.	Now we can go ahead and deploy the helm chart for the exporter with our custom values.  For convenience, there is a script that runs the helm install.  After a few moments you should be able to see things spinning up in the monitoring namespace.
 
 ```
 ./helm-install-mysql-ex.sh
 k get all -n monitoring | grep mysql
 ```
-
+<br>
 7.	Finally, to connect up the pieces, we need to define a job for Prometheus. We can do this the same way we did for Traefik in Lab 1. To see the changes, you can look at a diff between the configmap definition we used for Traefik and one we already have setup with the definition for the mysql exporter. You can click the **X** to the right of the name when done.
 
 ```
 code -d ps-cm-with-mysql.yaml ../extra/ps-cm-with-traefik.yaml
 ```
- 
+<br> 
 8.	Now you can apply the updated configmap definition.
 
 ```
 k apply -n monitoring -f ps-cm-with-mysql.yaml
 ```
-
-9.	You should now be able to see the mysql item in the **Prometheus Targets** page and also in the **Service Discovery** page. (Again, it may take a few minutes for the mysql target to appear and reach (1/1 up).)
+<br>
+9.	Switching back to the application, you should now be able to see the mysql item in the **Prometheus Targets** page and also in the **Service Discovery** page. (Again, it may take a few minutes for the mysql target to appear and reach (1/1 up).)
 
  ![mysql exporter in targets](./images/promstart21.png?raw=true "mysql exporter in targets")
  ![mysql exporter in service discovery](./images/promstart20.png?raw=true "mysql exporter in service discovery")
- 
-10.	 (Optional) If you want to see the metrics that are exposed by this job, there is a small script named pf.sh (in mysql-ex) that you can run to setup port-forwarding for the mysql-exporter.  Then you can look in the browser at http://localhost:9104/metrics .
+<br> 
+10.	 (Optional) If you want to see the metrics that are exposed by this job, there is a small script named pf.sh (in mysql-ex) that you can run to setup port-forwarding for the mysql-exporter.  Then you can look in the browser via the location from the PORTS tab.
 
 $ ./pf.sh
 
@@ -218,7 +218,7 @@ mysql_global_status_commands_total{command=~"(select)"}
  ![mysql select metric 1](./images/promstart30.png?raw=true "mysql select metric 1")
 
 
-9.	Now let's simulate some query traffic to the database.  I have a simple shell script that randomly queries the database in our application x times while waiting a certain interval between queries. It's called ping-db.sh.  Run this in a terminal for 30 times with an interval of 1 second and then go back and refresh the graph again by clicking on the blue Execute button. (Note that you may need to wait  a bit and refresh again to see the spike.)
+9.	Now let's simulate some query traffic to the database.  I have a simple shell script that randomly queries the database in our application x times while waiting a certain interval between queries. It's called ping-db.sh.  Run this in a terminal for 30 times with an interval of 1 second per the command below. Then go back and refresh the graph again by clicking on the blue Execute button. (Note that you may need to wait a bit and refresh again to see the spike.)
 
 ```
 ../extra/ping-db.sh roar 30 1
@@ -255,7 +255,7 @@ rate(mysql_global_status_commands_total{command=~"(select)"}[5m])
 rate(mysql_global_status_commands_total{command=~"(select)"}[5m]) * 100 > 30
 ```
 
-2.	After clicking on the Execute button to refresh, you will probably see an empty query result on the page.  This is because we are targeting a certain threshold of data and that threshold hasn't been hit in the time range of the query (5 minutes).  To have some data to look at, let's run our program to simulate the load again with the rate query in effect. Execute the same script we used before again with 30 iterations and a 2 second wait in-between. 
+2.	After clicking on the Execute button to refresh, you will probably see an empty query result on the page.  This is because we are targeting a certain threshold of data and that threshold hasn't been hit in the time range of the query (5 minutes).  To have some data to look at, let's run our program to simulate the load again with the rate query in effect. Back in the codespace's terminal, execute the same script we used before with 30 iterations and a 2 second wait in-between. 
 
 ```
 ../extra/ping-db.sh roar 30 2
@@ -269,7 +269,7 @@ rate(mysql_global_status_commands_total{command=~"(select)"}[5m]) * 100 > 30
 
 ![no alerts](./images/promstart36.png?raw=true "no alerts") 
  
-5.	Now let's configure some alert rules.  We already have a configmap with some basic rules in it.  cat the file extra/ps-cm-with-rules.yaml with the grep command and look at the "alerting-rules.yml" definition under "data:". 
+5.	Now let's configure some alert rules.  We already have a configmap with some basic rules in it. Back in the terminal, "cat" the file extra/ps-cm-with-rules.yaml with the grep command and look at the "alerting-rules.yml" definition under "data:". 
 
 ```
 cd /workspaces/prom-start-v2/extra 
@@ -309,7 +309,7 @@ k apply -n monitoring -f ps-cm-with-rules2.yaml
 /workspaces/prom-start-v2/extra/ping-db.sh roar 60 0.5
 ```
 
-11.	After this runs, after you refresh, on the Alerts tab, you should be able to see that the alert was fired. You can expand it to see details.
+11.	After this runs, refresh Prometheus in the browser. Then, on the Alerts tab, you should be able to see that the alert was fired. You can expand it to see details.
    
 ![alert firing](./images/promstart40.png?raw=true "alert firing")
 
@@ -352,7 +352,7 @@ k apply -n monitoring -f ps-cm-with-rules2.yaml
 
 4. Select **Prometheus** and then for the HTTP URL field, enter
 	http://prom-start-prometheus-server.monitoring.svc.cluster.local
-     Then click on **Save and Test**.  After a moment, you should get a response that indicates the data source is working.
+     Then scroll to the bottom of the page and click on **Save and Test**.  After a moment, you should get a response that indicates the data source is working.
  
 ![enter source](./images/promstart46.png?raw=true "enter source")
 ![test source](./images/promstart47.png?raw=true "test source")
@@ -372,14 +372,14 @@ k apply -n monitoring -f ps-cm-with-rules2.yaml
 
 8. Then click on the **Select metric** section (lower left) and pick a metric to show.  For example, you could type in **node_disk_io_time_seconds_total**.
 
-
+ ![select metric](./images/promstart62.png?raw=true "select metric")  
  
 
 9.  When done, click on the **Run queries** button and you should see a new graph being shown.
 
- 
+![run queries](./images/promstart63.png?raw=true "run queries")  
 
-10.  While we can create individual dashboards with Grafana, that can take a lot of time and effort.  The community has already created a number of dashboards that we can just import and use.  So let's grab one for mysql.  Back on the main page, click on the *three bars* icon on the left side, then select **Dashboards** then work through to get to **Import**.   
+10.  While we can create individual dashboards with Grafana, that can take a lot of time and effort.  The community has already created a number of dashboards that we can just import and use.  So let's grab one for mysql.  Back on the main page, click on the *three bars* icon on the left side, then select **Dashboards** then click on **+ Create Dashboard** to get to the **+Add visualization** page.  Do not click on the button to add a visualization. Instead click on the **Import dashboard** button below and to the right.   
 
  ![import option](./images/promstart51.png?raw=true "import option")
  
