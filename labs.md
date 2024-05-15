@@ -42,12 +42,13 @@ k get all -n monitoring
 
  ![Node Exporter](./images/promstart10.png?raw=true "Node Exporter")
 
-<p></p>  
+
+
 4.	Now, let's see which targets Prometheus is automatically scraping from the cluster.  Switch back to the Prometheus application's tab in your browser.  Back in the top menu (dark bar) on the main Prometheus page tab, select Status and then Targets. Search for **cadvisor** or scroll through the screen to find cadvisor.  Then see if you can find how long ago the last scraping happened, and how long it took for the **kubernetes-nodes-cadvisor** target. 
 
 ![Targets](./images/promstart15.png?raw=true "Targets")
  
-5.	Let's setup an application in our cluster that has a built-in Prometheus metrics exporter - traefik - an ingress.  The Helm chart is already loaded for you.  So, we just need to create a namespace for it and run a script to deploy it.  After a few moments, you should be able to see things running in the traefik namespace.
+5.	Let's setup an application in our cluster that has a built-in Prometheus metrics exporter - traefik - an ingress. Switch back to the codespace. The Helm chart is already loaded for you.  So, we just need to create a namespace for it and run a script to deploy it.  In the terminal, run the commands below. After a few moments, you should be able to see things running in the traefik namespace.
 
 ```
 k create ns traefik
