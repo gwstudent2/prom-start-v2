@@ -1,7 +1,7 @@
 # Getting Started with Prometheus
 ## Monitoring Kubernetes Infrastructure and Applications for Reliability
 ## Session labs 
-## Revision 2.1 - 02/24/23
+## Revision 2.2 - 05/15/24
 
 **Startup IF NOT ALREADY DONE! (This will take several minutes to run and there will be some error/warning messages along the way.)**
 ```
@@ -43,7 +43,7 @@ k get all -n monitoring
  ![Node Exporter](./images/promstart10.png?raw=true "Node Exporter")
 
 
-
+<br>
 4.	Now, let's see which targets Prometheus is automatically scraping from the cluster.  Switch back to the Prometheus application's tab in your browser.  Back in the top menu (dark bar) on the main Prometheus page tab, select Status and then Targets. Search for **cadvisor** or scroll through the screen to find cadvisor.  Then see if you can find how long ago the last scraping happened, and how long it took for the **kubernetes-nodes-cadvisor** target. 
 
 ![Targets](./images/promstart15.png?raw=true "Targets")
@@ -56,7 +56,7 @@ extra/helm-install-traefik.sh
 k get all -n traefik
 ```
 
-6.	You should now be able to see the metrics area that Traefik exposes for Prometheus as a pod endpoint.  Take a look in the **Status -> Targets** area of Prometheus and see if you can find it. You can enter "traefik" in the search box or use Ctrl-F/CMD-F to try to find the text **traefik**.  Note that this is the pod endpoint and not a standalone target.  (If you don't find it, see if the **kubernetes-pods (1/1 up)** has a *show more* button next to it.  If so, click on that to expand the list.)
+6.	You should now be able to see the metrics area that Traefik exposes for Prometheus as a pod endpoint.  In the tab where Prometheus is loaded, take a look in the **Status -> Targets** area of Prometheus and see if you can find it. You can enter "traefik" in the search box or use Ctrl-F/CMD-F to try to find the text **traefik**.  Note that this is the pod endpoint and not a standalone target.  (If you don't find it, see if the **kubernetes-pods (1/1 up)** has a *show more* button next to it.  If so, click on that to expand the list.)
 
 ![traefik in targets](./images/promstart61.png?raw=true "traefik in targets") 
 ![traefik in targets](./images/promstart16.png?raw=true "targets")
@@ -67,7 +67,7 @@ You can then click on the link in the Endpoint column to see the metrics that Tr
 7.	While we can find it as a pod endpoint, we don't yet have the traefik metrics established as a standalone "job" being monitored in Prometheus. You can see this because there is no section specifically for "traefik (1/1 up)" in the Targets page.  Also, Traefik is not listed if you check the Prometheus service-discovery page under **Status->Service Discovery**.
  
 
-8.	So we need to tell Prometheus about traefik as a job.  There are two ways.  One way is just to apply two annotations to the service for the target application. However, this will not work with more advanced versions of Prometheus. So, we'll do this instead by updating a configmap that the Prometheus server uses to get job information out of.  First let's take a look at what has to be changed to add this job.  We have a "before" and "after" version in the extra directory. We'll usethe built-in code diff tool to see the differences.
+8.	So we need to tell Prometheus about traefik as a job.  There are two ways.  One way is just to apply two annotations to the service for the target application. However, this will not work with more advanced versions of Prometheus. So, we'll do this instead by updating a configmap that the Prometheus server uses to get job information out of. Back in the codespace, let's take a look at what has to be changed to add this job.  We have a "before" and "after" version in the extra directory. We'll usethe built-in code diff tool to see the differences. Run the following in the terminal.
 
 ```
 cd extra (if not already there) 
@@ -76,18 +76,18 @@ code -d ps-cm-with-traefik.yaml ps-cm-start.yaml
 
 ![Traefik change compare](./images/promstart12.png?raw=true "Traefik change compare")
  
-9.	It's easy to see the difference here.  When you're done viewing, just go ahead and click on the X to the right of the name to close the diff. Now we'll apply the new configmap definition with our additional job. (Ignore the warning.)
+9.	This will bring up a visual side-by-side diff for the file. It's easy to see the difference here.  When you're done viewing, just go ahead and click on the X to the right of the name to close the diff. Now we'll apply the new configmap definition with our additional job. (Ignore the warning.)
 
 ```
 k apply -n monitoring -f ps-cm-with-traefik.yaml 
 ```
       
-10.	 Now if you refresh and look at the **Status->Targets** page in Prometheus and the **Service Discovery** page and filter via "traefik" in the search bar or do a Ctrl-F/CMD+F to search for **traefik**, you should find that the new item shows up as a standalone item on both pages. (It may take a moment for the traefik target to reach (1/1 up) in the targets page, so you may have to refresh after a moment and even do this more than once.)
+10.	 Now if you go back to the Prometheus session and refresh and look at the **Status->Targets** page in Prometheus and the **Service Discovery** page and filter via "traefik" in the search bar or do a Ctrl-F/CMD+F to search for **traefik**, you should find that the new item shows up as a standalone item on both pages. (It may take a moment for the traefik target to reach (1/1 up) in the targets page, so you may have to refresh after a moment and even do this more than once.)
 
 ![Traefik in targets](./images/promstart18.png?raw=true "Traefik in targets")
 ![Traefik in service discovery](./images/promstart17.png?raw=true "Traefik in service discovery")
 
-11. (Optional) If you want to see the metrics generated by traefik, you can open up the app from the PORTS page (**Traefik metrics row**) and add **/metrics** at the end of the URL once the page has opened.  (There will be a 404 there until you add the **/metric** part.)
+11. (Optional) If you want to see the metrics generated by traefik, you can open up the app from the PORTS page (**Traefik metrics row**) and add **/metrics** at the end of the URL once the page has opened.  (There will be a 404 there until you add the **/metrics** part.)
 
 ![Traefik metrics](./images/promstart19.png?raw=true "Traefik metrics")
  
