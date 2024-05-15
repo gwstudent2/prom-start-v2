@@ -36,8 +36,7 @@ k get all -n monitoring
 
 ![Prometheus](./images/promstart8.png?raw=true "Prometheus")
 
-
-3.	Now, lets open up the node exporter's metrics page and look at the different information on it.  (Note that we only have one node on this cluster.) To open that page, follow the same process as for the Prometheus app for the Node Exporter link (**PORTS-> Node Exporter -> Open in Browser**). Then click on the **Metrics** link on the browser screen that comes up. nce on that page, scan through some of the metrics that are exposed by this exporter.  Then see if you can find the "total number of network bytes received on device "lo". (Hint: look for this metric **node_network_receive_bytes_total{device="lo"}**).
+3.	Now, lets open up the node exporter's metrics page and look at the different information on it.  (Note that we only have one node on this cluster.) To open that page, go back to the codespace and follow the same process as for the Prometheus app for the Node Exporter link (**PORTS-> Node Exporter -> Open in Browser**). Then click on the **Metrics** link on the browser screen that comes up. nce on that page, scan through some of the metrics that are exposed by this exporter.  Then see if you can find the "total number of network bytes received on device "lo". (Hint: look for this metric **node_network_receive_bytes_total{device="lo"}**).
 
 ![Opening Node Exporter](./images/promstart9.png?raw=true "Opening Node Exporter")
 
